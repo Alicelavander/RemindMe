@@ -38,48 +38,50 @@ class _SecondScreenForLocation extends State<SecondScreenL> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("場所の登録")),
-      body: Container(
-        padding: EdgeInsets.all(20.0),
-        child: new Builder(
-          builder: (BuildContext context) {
-            return new Column(
-              children: <Widget>[
-                const SizedBox(height: 30.0,),
-                TextField(
-                  controller: myControllerForPlaceName,
-                  onChanged: savePlaceName,
-                  decoration: InputDecoration(
-                      hintText: '場所の名前を入力してください'
+      body: SingleChildScrollView(
+        child: Container(
+          padding: EdgeInsets.all(20.0),
+          child: new Builder(
+            builder: (BuildContext context) {
+              return new Column(
+                children: <Widget>[
+                  const SizedBox(height: 30.0,),
+                  TextField(
+                    controller: myControllerForPlaceName,
+                    onChanged: savePlaceName,
+                    decoration: InputDecoration(
+                        hintText: '場所の名前を入力してください'
+                    ),
                   ),
-                ),
-                const SizedBox(height: 30.0,),
-                TextField(
-                  controller: myControllerForLatitude,
-                  onChanged: saveLatitude,
-                  decoration: InputDecoration(
-                      hintText: '緯度を入力してください'
+                  const SizedBox(height: 30.0,),
+                  TextField(
+                    controller: myControllerForLatitude,
+                    onChanged: saveLatitude,
+                    decoration: InputDecoration(
+                        hintText: '緯度を入力してください'
+                    ),
                   ),
-                ),
-                const SizedBox(height: 30.0,),
-                TextField(
-                  controller: myControllerForLongitude,
-                  onChanged: saveLongitude,
-                  decoration: InputDecoration(
-                      hintText: '経度を入力してください'
+                  const SizedBox(height: 30.0,),
+                  TextField(
+                    controller: myControllerForLongitude,
+                    onChanged: saveLongitude,
+                    decoration: InputDecoration(
+                        hintText: '経度を入力してください'
+                    ),
                   ),
-                ),
-                const SizedBox(height: 100.0,),
-                RaisedButton(
-                  child: const Text('登録'),
-                  color: new Color(0xFF90CAF9),
-                  elevation: 4.0,
-                  onPressed: () {
-                    sendInfo();
-                  },
-                ),
-              ],
-            );
-          },
+                  const SizedBox(height: 100.0,),
+                  RaisedButton(
+                    child: const Text('登録'),
+                    color: new Color(0xFF90CAF9),
+                    elevation: 4.0,
+                    onPressed: () {
+                      sendInfo();
+                    },
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -160,65 +162,78 @@ class _SecondScreenForTodo extends State<SecondScreenT> {
   final myControllerForToDo = TextEditingController();
   final myControllerForDate = TextEditingController();
   var errorTrue = true;
-  List<DropdownMenuItem<Text>> PlaceItems = [];
+  List<DropdownMenuItem<String>> PlaceItems = [];
+  String selectedValue;
 
 
-  loadData() {
-    PlaceItems.add(new DropdownMenuItem(child: new Text('場所を選択してください')));
+  loadData() async {
+    setState(() {
+      PlaceItems.add(new DropdownMenuItem(child: new Text('場所を選択してください')));
+    });
     googleapis.clientViaServiceAccount(credentials, SCOPES).then((http_client) {
       var sheetApi = new googleapis.SheetsApi(http_client);
       sheetApi.spreadsheets.values.get('1th6HBdA9C-u1b-4OkXpSO_sBtlIOYFCScPVoICSnAfY', "foo").then((ret) {
         values = ret.values;
         for(var i=1; i<values.length; i++){
-          var A = values[i];
-          PlaceItems.add(new DropdownMenuItem(child: new Text(A[0])));
+          setState((){
+            //var v = new Text(values[i][0]);
+            PlaceItems.add(new DropdownMenuItem(child: Text(values[i][0]), value: values[i][0]));
+          });
         }
       });
     });
   }
+
+  @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
   
   @override
   Widget build(BuildContext context) {
-    loadData();
     return Scaffold(
       appBar: AppBar(title: const Text("Todoの登録")),
-      body: Container(
-        padding: EdgeInsets.all(20.0),
-        child: new Builder(
-          builder: (BuildContext context) {
-            return new Column(
-              children: <Widget>[
-                const SizedBox(height: 30.0,),
-                //TODO: 場所を選べないです！！
-                DropdownButton(
-                  items: PlaceItems,
-                  onChanged: savePlace,
-                  hint: Text('場所を選択してください'),
-                ),
-                const SizedBox(height: 30.0,),
-                TextField(
-                  controller: myControllerForToDo,
-                  onChanged: saveToDo,
-                  decoration: InputDecoration(hintText: 'ToDoを入力してください'),
-                ),
-                const SizedBox(height: 30.0,),
-                TextField(
-                  controller: myControllerForDate,
-                  onChanged: saveDate,
-                  decoration: InputDecoration(hintText: '日付を入力してください'),
-                ),
-                const SizedBox(height: 100.0,),
-                RaisedButton(
-                  child: const Text('登録'),
-                  color: new Color(0xFF90CAF9),
-                  elevation: 4.0,
-                  onPressed: () {
-                    sendInfo();
-                  },
-                ),
-              ],
-            );
-          },
+      body: SingleChildScrollView(
+        child: Container(
+          padding: EdgeInsets.all(20.0),
+          child: new Builder(
+            builder: (BuildContext context) {
+              return new Column(
+                children: <Widget>[
+                  const SizedBox(height: 30.0,),
+                  //TODO: 場所を選べないです！！
+                  DropdownButton(
+                    items: PlaceItems,
+                    value: selectedValue,
+                    onChanged: savePlace,
+                    hint: Text('場所を選択してください'),
+                  ),
+                  const SizedBox(height: 30.0,),
+                  TextField(
+                    controller: myControllerForToDo,
+                    //onChanged: saveToDo,
+                    decoration: InputDecoration(hintText: 'ToDoを入力してください'),
+                  ),
+                  const SizedBox(height: 30.0,),
+                  TextField(
+                    controller: myControllerForDate,
+                    //onChanged: saveDate,
+                    decoration: InputDecoration(hintText: '日付を入力してください'),
+                  ),
+                  const SizedBox(height: 100.0,),
+                  RaisedButton(
+                    child: const Text('登録'),
+                    color: new Color(0xFF90CAF9),
+                    elevation: 4.0,
+                    onPressed: () {
+                      sendInfo();
+                    },
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -258,11 +273,9 @@ class _SecondScreenForTodo extends State<SecondScreenT> {
   }
 
   savePlace(str) {
-        (str) {
-      setState(() {
-        str = myControllerForPlace.text;
-      });
-    };
+    setState(() {
+      selectedValue = str;
+    });
   }
 
   saveToDo(str) {
