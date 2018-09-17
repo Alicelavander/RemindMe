@@ -172,8 +172,9 @@ class _SecondScreenForTodo extends State<SecondScreenT> {
     });
     googleapis.clientViaServiceAccount(credentials, SCOPES).then((http_client) {
       var sheetApi = new googleapis.SheetsApi(http_client);
-      sheetApi.spreadsheets.values.get('1th6HBdA9C-u1b-4OkXpSO_sBtlIOYFCScPVoICSnAfY', "foo").then((ret) {
+      sheetApi.spreadsheets.values.get('1th6HBdA9C-u1b-4OkXpSO_sBtlIOYFCScPVoICSnAfY', "Place").then((ret) {
         values = ret.values;
+        print(values);
         for(var i=1; i<values.length; i++){
           setState((){
             //var v = new Text(values[i][0]);
