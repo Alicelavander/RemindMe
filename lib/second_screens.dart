@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:googleapis/sheets/v4.dart' as googleapis;
 import 'package:googleapis_auth/auth_io.dart' as googleapis;
 import 'package:thisisatest/main.dart' as main;
+import 'package:location/location.dart';
+import 'package:thisisatest/main.dart';
+import 'package:thisisatest/fancy_fab.dart';
 
 final credentials = new googleapis.ServiceAccountCredentials.fromJson(r'''
 {
@@ -28,11 +31,23 @@ class SecondScreenT extends StatefulWidget{
 
 }
 
+
 class _SecondScreenForLocation extends State<SecondScreenL> {
+  CurrentLocation current = new CurrentLocation();
   final myControllerForPlaceName = TextEditingController();
-  final myControllerForLatitude = TextEditingController();
-  final myControllerForLongitude = TextEditingController();
+  final myControllerForLatitude = TextEditingController(text: '');
+  final myControllerForLongitude = TextEditingController(text: '');
   var errorTrue = true;
+
+  void GPS() async {
+    var location = new Location();
+    location.getLocation().then((currentLocation) {
+      current.latitude = currentLocation['latitude'];
+      current.longitude = currentLocation['longitude'];
+      //print("gps location $GPS_lad,$GPS_lng");
+      //print('accuracy = $currentLocation["accuracy"]');
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -111,23 +126,23 @@ class _SecondScreenForLocation extends State<SecondScreenL> {
     };
   }
 
-  sendInfo() async {
+  sendInfo() async{
     googleapis.clientViaServiceAccount(main.credentials, main.SCOPES).then((
         http_client) {
       var sheetApi = new googleapis.SheetsApi(http_client);
       sheetApi.spreadsheets.values.get(
           '1th6HBdA9C-u1b-4OkXpSO_sBtlIOYFCScPVoICSnAfY', "Place").then((ret) {
+        errorTrue = false;
         ret.values.add(
             [myControllerForPlaceName.text, myControllerForLatitude.text, myControllerForLongitude.text]);
+        sheetApi.spreadsheets.values.update(
+            ret, '1th6HBdA9C-u1b-4OkXpSO_sBtlIOYFCScPVoICSnAfY', ret.range,
+            valueInputOption: 'RAW');
         setState(() {
           myControllerForPlaceName.clear();
           myControllerForLatitude.clear();
           myControllerForLongitude.clear();
         });
-        sheetApi.spreadsheets.values.update(
-            ret, '1th6HBdA9C-u1b-4OkXpSO_sBtlIOYFCScPVoICSnAfY', ret.range,
-            valueInputOption: 'RAW');
-        errorTrue = false;
       });
     })
         .catchError((e) {
@@ -192,6 +207,7 @@ class _SecondScreenForTodo extends State<SecondScreenT> {
   
   @override
   Widget build(BuildContext context) {
+    loadData();
     return Scaffold(
       appBar: AppBar(title: const Text("Todoの登録")),
       body: SingleChildScrollView(
@@ -202,7 +218,6 @@ class _SecondScreenForTodo extends State<SecondScreenT> {
               return new Column(
                 children: <Widget>[
                   const SizedBox(height: 30.0,),
-                  //TODO: 場所を選べないです！！
                   DropdownButton(
                     items: PlaceItems,
                     value: selectedValue,
@@ -239,7 +254,7 @@ class _SecondScreenForTodo extends State<SecondScreenT> {
     );
   }
 
-  sendInfo() async {
+  sendInfo() {
     googleapis.clientViaServiceAccount(main.credentials, main.SCOPES).then((
         http_client) {
       var sheetApi = new googleapis.SheetsApi(http_client);
